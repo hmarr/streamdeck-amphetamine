@@ -1,4 +1,5 @@
-import streamDeck, { action, KeyDownEvent, SingletonAction, WillAppearEvent, WillDisappearEvent } from "@elgato/streamdeck";
+import * as fs from "node:fs";
+import streamDeck, { action, KeyUpEvent, SingletonAction, WillAppearEvent, WillDisappearEvent } from "@elgato/streamdeck";
 import { runAppleScript } from "run-applescript";
 
 const logger = streamDeck.logger.createScope("toggle-session");
@@ -47,15 +48,26 @@ export class ToggleSession extends SingletonAction<ActionSettings> {
 	/**
 	 * Run whenever the action key is pressed.
 	 */
-	async onKeyDown(ev: KeyDownEvent<ActionSettings>): Promise<void> {
-		logger.info("onKeyDown");
+	async onKeyUp(ev: KeyUpEvent<ActionSettings>): Promise<void> {
+		logger.info("onKeyUp");
+
 		if (this.sessionActive) {
-			await endSession();
+			const succeeded = await endSession();
+			if (!succeeded) {
+				ev.action.showAlert();
+				logger.error("failed to end session");
+				return;
+			}
 			this.sessionActive = false;
 			await ev.action.setTitle(`Off`);
 			await ev.action.setState(0);
 		} else {
-			await startSession();
+			const succeeded = await startSession();
+			if (!succeeded) {
+				await ev.action.showAlert();
+				logger.error("failed to start session");
+				return;
+			}
 			this.sessionActive = true;
 			await ev.action.setTitle(`On`);
 			await ev.action.setState(1);
@@ -72,12 +84,15 @@ type ActionSettings = {};
  * Check if there is an active Amphetamine session.
  */
 async function checkForActiveSession() {
-	// TODO: check Amphetamine is installed
-
 	const isSessionActive = await runAppleScript(`
+	-- Condition ensures app is both installed and running
+	if application "Amphetamine" is running then
 		tell application "Amphetamine"
 			return session is active
 		end tell
+	else
+		return false
+	end if
 	`);
 	return isSessionActive === "true"
 }
@@ -86,24 +101,28 @@ async function checkForActiveSession() {
  * Start a new Amphetamine session.
  */
 async function startSession() {
-	// TODO: check Amphetamine is installed
-
-	await runAppleScript(`
-    tell application "Amphetamine"
-			start new session
-    end tell
-  `);
+	if (!checkAmphetamineInstalled()) {
+		return false;
+	}
+	await runAppleScript(`tell application "Amphetamine" to start new session`);
+	return true;
 }
 
 /**
  * End the current Amphetamine session.
  */
 async function endSession() {
-	// TODO: check Amphetamine is installed
-
-	await runAppleScript(`
-		tell application "Amphetamine"
-			end session
-		end tell
+	const succeeded = await runAppleScript(`
+	if application "Amphetamine" is running then
+		tell application "Amphetamine" to end session
+		return true
+	else
+		return false
+	end if
   `);
+	return succeeded === "true"
+}
+
+function checkAmphetamineInstalled() {
+	return fs.existsSync("/Applications/Amphetamine.app");
 }
