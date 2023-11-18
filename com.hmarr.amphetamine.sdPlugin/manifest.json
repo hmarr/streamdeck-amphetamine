@@ -1,0 +1,48 @@
+{
+	"Name": "Amphetamine",
+	"Version": "0.1.0",
+	"Author": "Harry Marr",
+	"Actions": [
+		{
+			"Name": "Toggle",
+			"UUID": "com.hmarr.amphetamine.toggle-session",
+			"Icon": "imgs/actions/toggle-session/action",
+			"Tooltip": "Toggles the Amphetamine session on/off.",
+			"Controllers": [
+				"Keypad"
+			],
+			"States": [
+				{
+					"Image": "imgs/actions/toggle-session/key-inactive",
+					"TitleAlignment": "bottom",
+					"ShowTitle": false
+				},
+				{
+					"Image": "imgs/actions/toggle-session/key-active",
+					"TitleAlignment": "bottom",
+					"ShowTitle": false
+				}
+			]
+		}
+	],
+	"Category": "Amphetamine",
+	"CategoryIcon": "imgs/plugin/category",
+	"CodePath": "bin/plugin.js",
+	"Description": "Control Amphetamine with your Stream Deck",
+	"Icon": "imgs/plugin/marketplace",
+	"SDKVersion": 2,
+	"Software": {
+		"MinimumVersion": "6.4"
+	},
+	"OS": [
+		{
+			"Platform": "mac",
+			"MinimumVersion": "10.15"
+		}
+	],
+	"Nodejs": {
+		"Version": "20",
+		"Debug": "enabled"
+	},
+	"UUID": "com.hmarr.amphetamine"
+}
