@@ -1,6 +1,7 @@
 {
 	"scripts": {
 		"build": "rollup -c",
+		"build:release": "rollup -c && script/build-release-package",
 		"watch": "rollup -c -w --watch.onEnd=\"streamdeck restart com.hmarr.amphetamine\""
 	},
 	"type": "module",

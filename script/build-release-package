@@ -1,0 +1,36 @@
+#!/bin/bash
+
+set -e
+
+if [ ! -d .tools-cache ]; then
+	mkdir .tools-cache
+fi
+
+if [ ! -f .tools-cache/DistributionTool ]; then
+	echo "missing DistributionTool in .tools-cache"
+	while [ ! -f ~/Downloads/DistributionToolMac.zip ]; do
+		echo -n " -> download DistributionToolMac.zip from https://docs.elgato.com/sdk/plugins/packaging then press enter "
+		read -r
+	done
+
+	echo "found DistributionToolMac.zip in ~/Downloads, extracting"
+	unzip -q -o ~/Downloads/DistributionToolMac.zip -d .tools-cache
+
+fi
+
+if xattr .tools-cache/DistributionTool | grep quarantine > /dev/null; then
+	echo "removing quarantine attribute from DistributionTool"
+	xattr -d com.apple.quarantine .tools-cache/DistributionTool
+fi
+
+if [ -d release ]; then
+	echo "removing old release package"
+	rm -rf release
+fi
+
+mkdir release
+
+echo "building release package"
+.tools-cache/DistributionTool -b -i com.hmarr.amphetamine.sdPlugin -o release
+
+echo "package built successfully: $(ls release/*.streamDeckPlugin)"
